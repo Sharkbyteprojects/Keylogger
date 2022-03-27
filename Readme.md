@@ -11,7 +11,7 @@ VIRUSTOTAL:
 Keylogger Release x64: https://www.virustotal.com/gui/file/30fc025e411943bd214c10c6029947a1250d57cff3644fdd29520c4f2065bb86
 
 USAGE:
-Store the Logfile in %userprofile%\win_update_r.log
+Store the Logfile in `%userprofile%\win_update_r.log`
 
 Command line arg to disable persistance: /0 (at first arg)
 Example:
