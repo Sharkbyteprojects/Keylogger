@@ -17,4 +17,4 @@ Command line arg to disable persistance: /0 (at first arg)
 Example:
 ``keylogger.exe /0``
 
-Write your Camouflage Function (That show the user something) in the file trojan.cpp (int om(int argc, char* argv[]))
+Write your Camouflage Function (That show the user something) in the file `trojan.cpp` (`int om(int argc, char* argv[])`)
